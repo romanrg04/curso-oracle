@@ -30,7 +30,7 @@ end ;
 exec saludar('Roman Robles Garcia');
 --Generamos la Secuencia
 create sequence sec_persona
-star with 1
+start with 1
 increment by 1
 nomaxvalue;
 --Generamos la tabla
