@@ -1,0 +1,80 @@
+create table trabajador(seguro integer primary key, nombre varchar2(25), edad integer);
+create table nomina(id_nomina integer, seguro integer, sueldo_base float, horas_laboradas integer, fecha_pago date, constraint pk_id_nomina primary key(id_nomina), 
+constraint fk_seguro foreign key(seguro) references trabajador(seguro));
+
+create sequence sec_nomina
+start with 1
+increment by 1
+nomaxvalue;
+
+CREATE OR REPLACE PROCEDURE GUARDAR_NOMINA(MY_ID_NOMINA OUT INTEGER, MY_SEGURO IN INTEGER, MY_SUELDO_BASE IN INTEGER)
+AS 
+BEGIN
+SELECT SEC_NOMINA.NEXTVAL INTO MY_ID_NOMINA FROM DUAL;
+INSERT INTO NOMINA(ID_NOMINA, SEGURO,SUELDO_BASE) VALUES(MY_ID_NOMINA, MY_SEGURO, MY_SUELDO_BASE);
+END;
+/
+
+CREATE OR REPLACE PROCEDURE GENERAR_TRABAJADOR(MY_SEGURO IN INTEGER, MY_NOMBRE IN VARCHAR2, MY_EDAD IN INTEGER, MY_ID_NOMINA OUT INTEGER, MY_SUELDO_BASE IN FLOAT)
+AS 
+BEGIN
+INSERT INTO TRABAJADOR VALUES(MY_SEGURO, MY_NOMBRE,MY_EDAD);
+GUARDAR_NOMINA(MY_ID_NOMINA, MY_SEGURO, MY_SUELDO_BASE);
+END;
+/
+
+DECLARE 
+VALOR INTEGER;
+BEGIN
+GENERAR_TRABAJADOR(2,'Pedro',40,VALOR,8000);
+END;
+/
+SELECT * FROM TRABAJADOR;
+SELECT * FROM NOMINA;
+
+CREATE OR REPLACE PROCEDURE HORAS_LABORADAS
+(SEGURO IN)
+UPDATE NOMINA
+SET horas_laboradas = 40 WHERE SEGURO = 1;
+
+--ESTRUCTURA DE UN CURSOR BASICO 
+DECLARE 
+CURSOR CUR_1 IS SELECT*FROM TRABAJADOR;
+BEGIN
+FOR GATO IN CUR_1 LOOP 
+DMBS_OUTPUT.PUT_LINE('NOMBRE'||GATO.NOMBRE||'EDAD'||GATO.EDAD);
+END LOOP; 
+END;
+/
+SET SERVEROUTPUT ON;
+
+
+--Respuesta al ejercicio 
+cursor cur_2 is select * from nomina;
+nombre varchar2(40);
+edad integer;
+sueldo integer;
+begin 
+for gato in cur_1 loop
+for perro in cur_2 loop
+if perro.seguro=gato.seguro then
+dbms_output.put_line('NOMBRE:'||gato.nombre||'SUELDO'||perro.sueldo_base);
+end if;
+end loop;
+end loop;
+end;
+/
+set serveroutput on;
+select * from nomina;
+
+--Asignar horas laboradas a 40
+--Cursones con UPDATE!!
+DECLARE 
+CURSOR CUR_3 IS SELECT * FROM NOMINA FOR UPDATE ;
+BEGIN
+FOR REC IN CUR_3 LOOP
+UPDATE NOMINA SET HORAS_LABORADAS=40 WHERE CURRENT OF CUR_3;
+END LOOP; 
+END;
+/
+SELECT * FROM NOMINA;
